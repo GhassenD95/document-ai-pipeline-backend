@@ -7,6 +7,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
+@Table(name = "documents")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -31,6 +32,9 @@ public class Document {
     private String extractedText;
 
     private String extractedData;
+
+    @Column(columnDefinition = "BYTEA")
+    private byte[] fileData;
 
     private Instant createdAt;
 

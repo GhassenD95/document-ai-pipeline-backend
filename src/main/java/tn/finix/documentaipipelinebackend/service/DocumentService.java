@@ -10,6 +10,7 @@ import tn.finix.documentaipipelinebackend.model.Document;
 import tn.finix.documentaipipelinebackend.repository.DocumentRepository;
 import tn.finix.documentaipipelinebackend.util.FileUtils;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,6 +26,12 @@ public class DocumentService {
         document.setFileName(file.getOriginalFilename());
         document.setContentType(file.getContentType());
         document.setFileSize(file.getSize());
+
+        try {
+            document.setFileData(file.getBytes());
+        } catch (IOException e) {
+            throw new InvalidFieldException("Failed to read file content");
+        }
 
         documentRepository.save(document);
 
