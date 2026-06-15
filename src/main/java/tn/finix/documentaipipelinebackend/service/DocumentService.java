@@ -1,9 +1,13 @@
 package tn.finix.documentaipipelinebackend.service;
 
 import lombok.AllArgsConstructor;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import tn.finix.documentaipipelinebackend.config.RabbitConfig;
+import tn.finix.documentaipipelinebackend.dto.DocumentMessage;
 import tn.finix.documentaipipelinebackend.dto.DocumentResponse;
+import tn.finix.documentaipipelinebackend.dto.UploadResponse;
 import tn.finix.documentaipipelinebackend.exceptions.DocumentNotFoundException;
 import tn.finix.documentaipipelinebackend.exceptions.InvalidFieldException;
 import tn.finix.documentaipipelinebackend.model.Document;
@@ -18,8 +22,9 @@ import java.util.UUID;
 @AllArgsConstructor
 public class DocumentService {
     private final DocumentRepository documentRepository;
+    private final RabbitTemplate rabbitTemplate;
 
-    public DocumentResponse uploadDocument(MultipartFile file) {
+    public UploadResponse uploadDocument(MultipartFile file) {
         validateFile(file);
 
         Document document = new Document();
@@ -33,18 +38,22 @@ public class DocumentService {
             throw new InvalidFieldException("Failed to read file content");
         }
 
-        documentRepository.save(document);
+        Document saved = documentRepository.save(document);
 
-        return new DocumentResponse(
-                document.getId(),
-                document.getFileName(),
-                document.getFileSize(),
-                document.getContentType(),
-                document.getStatus(),
-                document.getExtractedText(),
-                document.getExtractedData(),
-                document.getCreatedAt(),
-                document.getUpdatedAt()
+        //Send Message to RabbitMQ
+        DocumentMessage message = new DocumentMessage(
+                saved.getId(),
+                saved.getFileName(),
+                saved.getContentType()
+        );
+
+        rabbitTemplate.convertAndSend(RabbitConfig.EXCHANGE, RabbitConfig.ROUTING_KEY, message);
+
+        return new UploadResponse(
+                saved.getId(),
+                saved.getFileName(),
+                saved.getStatus(),
+                saved.getCreatedAt()
         );
     }
 

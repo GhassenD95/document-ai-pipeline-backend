@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tn.finix.documentaipipelinebackend.dto.DocumentResponse;
+import tn.finix.documentaipipelinebackend.dto.UploadResponse;
 import tn.finix.documentaipipelinebackend.service.DocumentService;
 
 import java.util.List;
@@ -23,8 +24,8 @@ public class DocumentController {
 
     @PostMapping("/upload")
     @Operation(summary = "Upload a PDF document for processing")
-    public ResponseEntity<DocumentResponse> upload(@RequestParam("file") MultipartFile file) {
-        DocumentResponse response = documentService.uploadDocument(file);
+    public ResponseEntity<UploadResponse> upload(@RequestParam("file") MultipartFile file) {
+        UploadResponse response = documentService.uploadDocument(file);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
 
