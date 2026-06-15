@@ -53,6 +53,20 @@ public class DocumentController {
                 .body(data);
     }
 
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Delete a document")
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+        documentService.deleteDocument(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/retry")
+    @Operation(summary = "Retry processing a failed document")
+    public ResponseEntity<Void> retry(@PathVariable UUID id) {
+        documentService.retryDocument(id);
+        return ResponseEntity.accepted().build();
+    }
+
     @GetMapping("/{id}")
     @Operation(summary = "Get document by ID")
     public ResponseEntity<DocumentResponse> getDocument(@PathVariable UUID id) {

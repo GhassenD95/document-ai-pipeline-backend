@@ -11,6 +11,7 @@ import tn.finix.documentaipipelinebackend.dto.UploadResponse;
 import tn.finix.documentaipipelinebackend.exceptions.DocumentNotFoundException;
 import tn.finix.documentaipipelinebackend.exceptions.InvalidFieldException;
 import tn.finix.documentaipipelinebackend.model.Document;
+import tn.finix.documentaipipelinebackend.model.DocumentStatus;
 import tn.finix.documentaipipelinebackend.repository.DocumentRepository;
 import tn.finix.documentaipipelinebackend.util.FileUtils;
 
@@ -241,6 +242,28 @@ public class DocumentService {
         Document document = documentRepository.findById(id)
                 .orElseThrow(() -> new DocumentNotFoundException(id));
         return document.getFileData();
+    }
+
+    public void deleteDocument(UUID id) {
+        Document document = documentRepository.findById(id)
+                .orElseThrow(() -> new DocumentNotFoundException(id));
+        documentRepository.delete(document);
+    }
+
+    public void retryDocument(UUID id) {
+        Document document = documentRepository.findById(id)
+                .orElseThrow(() -> new DocumentNotFoundException(id));
+        document.setStatus(DocumentStatus.PENDING);
+        document.setExtractedText(null);
+        document.setExtractedData(null);
+        documentRepository.save(document);
+
+        DocumentMessage message = new DocumentMessage(
+                document.getId(),
+                document.getFileName(),
+                document.getContentType()
+        );
+        rabbitTemplate.convertAndSend(RabbitConfig.EXCHANGE, RabbitConfig.ROUTING_KEY, message);
     }
 
     private DocumentResponse toResponse(Document doc) {
