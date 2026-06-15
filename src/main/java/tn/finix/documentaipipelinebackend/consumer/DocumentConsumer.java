@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 import tn.finix.documentaipipelinebackend.dto.DocumentMessage;
+import tn.finix.documentaipipelinebackend.llm.LlmService;
 import tn.finix.documentaipipelinebackend.model.Document;
 import tn.finix.documentaipipelinebackend.model.DocumentStatus;
 import tn.finix.documentaipipelinebackend.ocr.OcrService;
@@ -17,6 +18,7 @@ public class DocumentConsumer {
 
     private final DocumentRepository documentRepository;
     private final OcrService ocrService;
+    private final LlmService llmService;
 
     @RabbitListener(queues = "${docai.rabbitmq.queue:document.processing}")
     public void processDocument(DocumentMessage message) {
@@ -33,6 +35,10 @@ public class DocumentConsumer {
             log.info("Processing document: {}", message.fileName());
             var result = ocrService.extract(document.getFileData(), document.getFileName());
             document.setExtractedText(result.text());
+
+            log.info("Extracting fields with LLM for document: {}", message.documentId());
+            String extractedData = llmService.extractFields(result.text(), "invoice");
+            document.setExtractedData(extractedData);
 
             document.setStatus(DocumentStatus.COMPLETED);
             documentRepository.save(document);
