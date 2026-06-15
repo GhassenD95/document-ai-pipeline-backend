@@ -86,6 +86,15 @@ public class DocumentService {
                 .toList();
     }
 
+    public List<DocumentResponse> searchDocuments(String query) {
+        if (query == null || query.isBlank()) {
+            return getAllDocuments();
+        }
+        return documentRepository.searchByText(query).stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
     private DocumentResponse toResponse(Document doc) {
         return new DocumentResponse(
                 doc.getId(),

@@ -29,6 +29,12 @@ public class DocumentController {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
 
+    @GetMapping("/search")
+    @Operation(summary = "Search documents by text")
+    public ResponseEntity<List<DocumentResponse>> search(@RequestParam("q") String query) {
+        return ResponseEntity.ok(documentService.searchDocuments(query));
+    }
+
     @GetMapping("/{id}")
     @Operation(summary = "Get document by ID")
     public ResponseEntity<DocumentResponse> getDocument(@PathVariable UUID id) {
