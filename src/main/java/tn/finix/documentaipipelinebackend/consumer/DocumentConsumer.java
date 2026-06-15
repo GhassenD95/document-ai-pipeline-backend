@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import tn.finix.documentaipipelinebackend.dto.DocumentMessage;
 import tn.finix.documentaipipelinebackend.model.Document;
 import tn.finix.documentaipipelinebackend.model.DocumentStatus;
+import tn.finix.documentaipipelinebackend.ocr.OcrService;
 import tn.finix.documentaipipelinebackend.repository.DocumentRepository;
 
 @Component
@@ -15,6 +16,7 @@ import tn.finix.documentaipipelinebackend.repository.DocumentRepository;
 public class DocumentConsumer {
 
     private final DocumentRepository documentRepository;
+    private final OcrService ocrService;
 
     @RabbitListener(queues = "${docai.rabbitmq.queue:document.processing}")
     public void processDocument(DocumentMessage message) {
@@ -29,7 +31,8 @@ public class DocumentConsumer {
             documentRepository.save(document);
 
             log.info("Processing document: {}", message.fileName());
-            Thread.sleep(2000);
+            var result = ocrService.extract(document.getFileData(), document.getFileName());
+            document.setExtractedText(result.text());
 
             document.setStatus(DocumentStatus.COMPLETED);
             documentRepository.save(document);
