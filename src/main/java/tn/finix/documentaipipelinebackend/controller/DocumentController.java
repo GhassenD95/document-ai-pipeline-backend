@@ -3,7 +3,9 @@ package tn.finix.documentaipipelinebackend.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,6 +35,22 @@ public class DocumentController {
     @Operation(summary = "Search documents by text")
     public ResponseEntity<List<DocumentResponse>> search(@RequestParam("q") String query) {
         return ResponseEntity.ok(documentService.searchDocuments(query));
+    }
+
+    @PostMapping("/generate-sample")
+    @Operation(summary = "Generate a sample invoice PDF for testing")
+    public ResponseEntity<UploadResponse> generateSample() {
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(documentService.generateSamplePdf());
+    }
+
+    @GetMapping("/{id}/download")
+    @Operation(summary = "Download the original PDF file")
+    public ResponseEntity<byte[]> download(@PathVariable UUID id) {
+        byte[] data = documentService.getDocumentFileData(id);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"document.pdf\"")
+                .body(data);
     }
 
     @GetMapping("/{id}")
