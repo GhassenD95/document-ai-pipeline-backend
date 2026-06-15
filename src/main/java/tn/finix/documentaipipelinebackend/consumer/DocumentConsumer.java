@@ -46,8 +46,10 @@ public class DocumentConsumer {
             log.info("Document processed successfully: {}", message.documentId());
         } catch (Exception e) {
             log.error("Failed to process document: {}", message.documentId(), e);
-            document.setStatus(DocumentStatus.FAILED);
-            documentRepository.save(document);
+            Document failedDoc = documentRepository.findById(message.documentId())
+                    .orElse(document);
+            failedDoc.setStatus(DocumentStatus.FAILED);
+            documentRepository.save(failedDoc);
             throw new RuntimeException("Document processing failed: " + message.documentId(), e);
         }
     }

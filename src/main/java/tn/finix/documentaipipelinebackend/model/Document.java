@@ -29,8 +29,10 @@ public class Document {
     @Column(nullable = false)
     private DocumentStatus status;
 
+    @Column(columnDefinition = "TEXT")
     private String extractedText;
 
+    @Column(columnDefinition = "TEXT")
     private String extractedData;
 
     @Column(columnDefinition = "BYTEA")
