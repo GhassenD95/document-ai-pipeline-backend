@@ -14,7 +14,6 @@ import tn.finix.documentaipipelinebackend.dto.UploadResponse;
 import tn.finix.documentaipipelinebackend.service.DocumentService;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -24,12 +23,6 @@ import java.util.UUID;
 public class DocumentController {
 
     private final DocumentService documentService;
-
-    @GetMapping("/health")
-    @Operation(summary = "Lightweight health check (no DB/queue)")
-    public ResponseEntity<Map<String, String>> health() {
-        return ResponseEntity.ok(Map.of("status", "ok"));
-    }
 
     @PostMapping("/upload")
     @Operation(summary = "Upload a PDF document for processing")
